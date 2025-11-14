@@ -58,6 +58,8 @@ extern byte sm_public_key[PUBLIC_KEY_SIZE];
 extern byte sm_private_key[PRIVATE_KEY_SIZE];
 extern byte dev_public_key[PUBLIC_KEY_SIZE];
 
+extern void *sbi_memcpy(void *dest, const void *src, size_t count);
+
 void sm_copy_key(void)
 {
   sbi_memcpy(sm_hash, sanctum_sm_hash, MDSIZE);

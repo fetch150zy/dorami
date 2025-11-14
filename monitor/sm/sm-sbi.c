@@ -87,6 +87,8 @@ unsigned long sbi_sm_stop_enclave(struct sbi_trap_regs *regs, unsigned long requ
   return 0;
 }
 
+extern unsigned long enclave_fix_access_permissions(enclave_id eid);
+
 unsigned long sbi_sm_set_enclave_permissions(){
   return enclave_fix_access_permissions(cpu_get_enclave_id());
 }

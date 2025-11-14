@@ -15,6 +15,7 @@
 #include <sbi/sbi_ecall_interface.h>
 #include <sm/sm-sbi-opensbi.h>
 #include <sm/enclave.h>
+#include <sm/sm-sbi.h>
 
 #include <sm/ipi.h>
 
@@ -280,16 +281,16 @@ struct sbi_trap_regs *mon_trap_handler_sumode(struct sbi_trap_regs *regs)
 			mon_ipi_check(hartid_local);
 			break;
 		default:
-			sbi_printf("[SM] Unhandled external interrupt (Core %d)\n", hartid_local);
+			sbi_printf("[SM] Unhandled external interrupt (Core %ld)\n", hartid_local);
 			msg = "unhandled external interrupt";
 			goto trap_error;
 		};
 		regs->mscratch = OSBI_mscratch[hartid_local];
 		
-		register unsigned long a0 asm("a0") = regs;
+		register unsigned long a0 asm("a0") = (unsigned long)regs;
 		asm("call _mon_exit_to_osbi" : : "r"(a0));
 		__builtin_unreachable();
-	}
+		}
 
 	if(mcause == CAUSE_SUPERVISOR_ECALL || mcause == CAUSE_MACHINE_ECALL){
 		ulong ecall_ext = regs->a7;
@@ -308,26 +309,26 @@ struct sbi_trap_regs *mon_trap_handler_sumode(struct sbi_trap_regs *regs)
 			regs->sscratch = sscratch_double_save_enclave[hartid_local];
 			
 			
-			register unsigned long a0 asm("a0") = regs;
+			register unsigned long a0 asm("a0") = (unsigned long)regs;
 			asm("call _mon_exit_to_su" : : "r"(a0));//return without invoking OSBI
 
-		} else{
+			} else{
 			unsigned long hartid = csr_read(CSR_MHARTID);
 			mon_ecall_enter(regs, hartid);
 			regs->mscratch = OSBI_mscratch[hartid_local];
 			
-			register unsigned long a0 asm("a0") = regs;
+			register unsigned long a0 asm("a0") = (unsigned long)regs;
 			asm("call _mon_exit_to_osbi" : : "r"(a0));
 		}
 	} else{
 		regs->mscratch = OSBI_mscratch[hartid_local];
 		
-		register unsigned long a0 asm("a0") = regs;
+		register unsigned long a0 asm("a0") = (unsigned long)regs;
 		asm("call _mon_exit_to_osbi" : : "r"(a0));
 	}
 	regs->mscratch = OSBI_mscratch[hartid_local];
 	
-	register unsigned long a0 asm("a0") = regs;
+	register unsigned long a0 asm("a0") = (unsigned long)regs;
 	asm("call _mon_exit_to_osbi" : : "r"(a0));
 	
 
@@ -357,7 +358,7 @@ struct sbi_trap_regs *mon_trap_return_osbi(struct sbi_trap_regs *regs){
 		for (size_t i = 0; i < 5; i++)
 		{
 			if(SU_started[i]){
-				sbi_printf("[SM] Other core already started; proceeding now... HARTID: %d, MEPC: %lx\n", hartid, regs->mepc);
+				sbi_printf("[SM] Other core already started; proceeding now... HARTID: %ld, MEPC: %lx\n", hartid, regs->mepc);
 				OSBI_mscratch[hartid] = regs->mscratch;
 				SU_started[hartid]= 1;
 
@@ -375,7 +376,7 @@ struct sbi_trap_regs *mon_trap_return_osbi(struct sbi_trap_regs *regs){
 		OSBI_mscratch[hartid] = regs->mscratch;
 		SU_started[hartid]= 1;
 		(void) SU_started[hartid];
-		sbi_printf("[SM] First entry into HOST kernel; proceeding now... HARTID: %d, MEPC: %lx\n", hartid, regs->mepc);
+		sbi_printf("[SM] First entry into HOST kernel; proceeding now... HARTID: %ld, MEPC: %lx\n", hartid, regs->mepc);
 		sbi_printf("MSCRATCH: 0x%lx, 0x%lx, 0x%lx, 0x%lx\n", OSBI_mscratch[0], OSBI_mscratch[1], OSBI_mscratch[2], OSBI_mscratch[3]);		// register unsigned long a0 asm("a0") = regs->a0;
 
 		register unsigned long a0 asm("a0") = regs->a0;
@@ -402,7 +403,7 @@ struct sbi_trap_regs *mon_trap_return_osbi(struct sbi_trap_regs *regs){
 			goto trap_error;
 		};
 		
-		register unsigned long a0 asm("a0") = regs;
+		register unsigned long a0 asm("a0") = (unsigned long)regs;
 		asm("fence; call _mon_exit_to_su" : : "r"(a0));
 	}
 
@@ -437,12 +438,12 @@ struct sbi_trap_regs *mon_trap_return_osbi(struct sbi_trap_regs *regs){
 
 	if(mcause == CAUSE_SUPERVISOR_ECALL || mcause == CAUSE_MACHINE_ECALL){
 		
-		register unsigned long a0 asm("a0") = &temporary_registers[hartid];
+		register unsigned long a0 asm("a0") = (unsigned long)&temporary_registers[hartid];
 		asm("fence; call _mon_exit_to_su" : : "r"(a0));
 	}
 	
 	
-	register unsigned long a0 asm("a0") = regs;
+	register unsigned long a0 asm("a0") = (unsigned long)regs;
 	asm("fence; call _mon_exit_to_su" : : "r"(a0));
 
 trap_error:
@@ -495,23 +496,23 @@ void sbi_trap_handler_keystone_enclave(struct sbi_trap_regs *regs)
 			
 			regs->mepc = regs->mepc + 4;
 			
-			register unsigned long a0 asm("a0") = regs;
+			register unsigned long a0 asm("a0") = (unsigned long)regs;
 			asm("call _mon_exit_to_su" : : "r"(a0));//return without invoking OSBI
 
 		} else{
 			unsigned long hartid = csr_read(CSR_MHARTID);
 			mon_ecall_enter(regs, hartid);
 			
-			register unsigned long a0 asm("a0") = regs;
+			register unsigned long a0 asm("a0") = (unsigned long)regs;
 			asm("call _mon_exit_to_osbi" : : "r"(a0));
 		}
 	} else{
 		
-		register unsigned long a0 asm("a0") = regs;
+		register unsigned long a0 asm("a0") = (unsigned long)regs;
 		asm("call _mon_exit_to_osbi" : : "r"(a0));
 	}
 	
-	register unsigned long a0 asm("a0") = regs;
+	register unsigned long a0 asm("a0") = (unsigned long)regs;
 	asm("call _mon_exit_to_osbi" : : "r"(a0));
 
 trap_error:
@@ -539,7 +540,7 @@ void __noreturn sbi_trap_exit(struct sbi_trap_regs *regs, unsigned int target)
 	}
 	
 	
-	register unsigned long a0 asm("a0") = regs;
+	register unsigned long a0 asm("a0") = (unsigned long)regs;
 	asm("call _mon_exit_to_su" : : "r"(a0));
 
 	__builtin_unreachable();

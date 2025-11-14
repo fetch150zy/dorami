@@ -27,7 +27,8 @@ typedef unsigned char byte;
 
 static int sm_init_done = 0;
 //static int sm_region_id = 0, os_region_id = 0;
-static int sp1_region_id = 0; dev_region_id = 0, sm_code_region_id = 0, sm_data_region_id = 0, os_region_id = 0;
+static int sp1_region_id = 0;
+static int dev_region_id = 0, sm_code_region_id = 0, sm_data_region_id = 0, os_region_id = 0;
 
 //For the moment, we perform the initialization here...
 static int tm_code_region_id = 0, tm_data_region_id = 0;

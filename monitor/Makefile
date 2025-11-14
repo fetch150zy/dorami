@@ -1,4 +1,4 @@
-march ?= rv64imafdc
+march ?= rv64imafdc_zifencei
 mabi ?= lp64
 CC = riscv64-unknown-elf-gcc
 OBJCOPY ?= riscv64-unknown-elf-objcopy

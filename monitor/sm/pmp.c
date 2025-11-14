@@ -8,7 +8,7 @@
 #include "safe_math_util.h"
 //#include "sm-sbi-opensbi.h"
 #include "page.h"
-//#include "ipi.h"
+#include "ipi.h"
 //#include <sbi/sbi_hart.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_locks.h>

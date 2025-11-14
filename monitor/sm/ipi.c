@@ -24,7 +24,7 @@ unsigned int mon_ipi_check(unsigned long hartid){
   return 0;
 }
 
-static unsigned int *msip = 0x2000000;
+static unsigned int *msip = (unsigned int *)0x2000000;
 
 static void mswi_ipi_send(unsigned int target_hart)
 {
