@@ -1,7 +1,7 @@
 march ?= rv64imafdc_zifencei
 mabi ?= lp64
-CC = riscv64-unknown-elf-gcc
-OBJCOPY ?= riscv64-unknown-elf-objcopy
+CC = riscv64-unknown-linux-gnu-gcc
+OBJCOPY ?= riscv64-unknown-linux-gnu-objcopy
 
 CFLAGS = \
 	-g -march=$(march) -mcmodel=medany -mabi=$(mabi) \
