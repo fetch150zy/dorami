@@ -39,7 +39,7 @@ SECTIONS
   . = 0x8003F000;
   .ipct : {
 		PROVIDE(_ipct_start = .);
-		*(._mon_goto_secondary*)
+		*(monitor_last_page*)
 		PROVIDE(_ipct_end = .);
 	}
   . = ALIGN(0x1000);

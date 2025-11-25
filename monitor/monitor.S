@@ -678,14 +678,8 @@ _scratch_addrs: //We hardcode space for 4 cores here to store scrach space addre
 	csrrw t0, mtvec, t0
 .endm
 
-.macro TRAP_OSBI_SET_PMP //(_launch_firmware)
-	csrrw t0, sscratch, t0
-	li t0, UNLOCK_OSBI
-	csrw pmpcfg0, t0 //(goes to _firmware_start)
-	//here starts first instruction of OSBI, "sliding" into it with PC advancing
-	//csrrw t0, sscratch, t0
-.endm
-
+# 这是 Sallyport 进入 Monitor 的入口, 该符号地址为 0x80001000
+# Sallyport 在 OpenSBI 代码段的最后, Sallyport 会跳转到 0x80001000
 .section ._mon_enter_osbi, "ax", %progbits
 .globl _mon_enter_osbi
 _mon_enter_osbi: //(_P_entry_from_F)
@@ -749,11 +743,17 @@ RISCV_PTR	0
 _sanctum_area:
 RISCV_PTR	0
 
-.section ._mon_goto_secondary, "ax", %progbits
-.globl _mon_goto_secondary //nop padding (2033) to get to end of page
-.rept 2033 //shorter form
+/* 这是 monitor 最后一个页，通过 `nop` 填充，确保该页最后的指令是预期的指令 */
+.section .monitor_last_page, "ax", %progbits
+.globl monitor_last_page
+.rept 2033
 	nop
 .endr
 
-_mon_goto_secondary_lastbits:
-TRAP_OSBI_SET_PMP
+/* 这是 monitor 最后的几条指令，这些指令执行完成之后通过 PC 自增进入 OpenSBI 区域 */
+monitor_last_instructions:
+	csrrw t0, sscratch, t0
+	li t0, 0x1800181F1B1D1818
+	csrw pmpcfg0, t0
+
+	//csrrw t0, sscratch, t0
